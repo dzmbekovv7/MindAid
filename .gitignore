@@ -1,0 +1,82 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pkl
+*.log
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+*.sqlite3
+
+# Django stuff
+*.pot
+*.pyc
+*.mo
+*.db
+*.sqlite3
+staticfiles/
+media/
+local_settings.py
+
+# Django migrations (optional to ignore generated pyc only)
+**/migrations/__pycache__/
+# Keep migration files, do NOT ignore them
+
+# Environment variables / settings
+.env
+*.env
+.env.*
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Byte-compiled / cache
+*.egg-info/
+.eggs/
+.cache/
+
+# Logs
+logs/
+*.log
+
+# Compiled C extensions
+*.so
+
+# pytest
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+
+# Pip
+pip-log.txt
+
+# Build
+build/
+dist/
+*.manifest
+*.spec
+
+# Node (if using frontend folder)
+node_modules/
+
+# Temporary files
+*.tmp
+*.temp
