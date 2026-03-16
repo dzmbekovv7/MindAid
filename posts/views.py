@@ -8,10 +8,15 @@ from .serializers import (GetSharePostsSerializer, GetSharePostCommentsSerialize
                           CreateHelpPostCommentSerializer, UpdateHelpPostSerializer)
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
 
 class GetSharePosts(generics.ListAPIView):
     queryset = SharePost.objects.all()
     serializer_class = GetSharePostsSerializer
+    filter_backends = [SearchFilter, DjangoFilterBackend]
+    filterset_fields = ['filter']
+    search_fields = ['filter', 'heading']
     permission_classes = [AllowAny]
 
 class GetSharePostComments(generics.ListAPIView):
@@ -53,6 +58,9 @@ class CreateSharePostComment(generics.CreateAPIView):
 class GetHelpPosts(generics.ListAPIView):
     queryset = HelpPost.objects.all()
     serializer_class = GetHelpPostsSerializer
+    filter_backends = [SearchFilter, DjangoFilterBackend]
+    filterset_fields = ['filter']
+    search_fields = ['filter', 'heading']
     permission_classes = [AllowAny]
 
 class GetHelpPostComments(generics.ListAPIView):
