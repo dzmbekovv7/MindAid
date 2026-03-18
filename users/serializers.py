@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from posts.serializers import GetSharePostsSerializer, GetHelpPostsSerializer
 from .models import MindAidUser
+from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
@@ -16,7 +17,6 @@ class GetUsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = MindAidUser
         fields = '__all__'
-
 
 class RegisterSerializer(serializers.Serializer):
     username = serializers.CharField()
@@ -104,19 +104,26 @@ class LoginSerializer(serializers.Serializer):
             "email": user.email,
         }
 
-class ChangePasswordSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MindAidUser
-        fields = ['old_password', 'new_password', 'new_password2']
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True)
+    new_password2 = serializers.CharField(write_only=True)
 
-    def validate(self, attrs):
+    def validate_old_password(self, value):
         user = self.context['request'].user
 
-        if not user.check_password(attrs['old_password']):
+        if not user.check_password(value):
             raise serializers.ValidationError("Old password is incorrect.")
 
+        return value
+
+    def validate(self, attrs):
         if attrs['new_password'] != attrs['new_password2']:
             raise serializers.ValidationError("Passwords do not match.")
+        if attrs['old_password'] == attrs['new_password']:
+            raise serializers.ValidationError("Old password is the same as new password.")
+
+        validate_password(attrs['new_password'], self.context['request'].user)
 
         return attrs
 
