@@ -1,18 +1,43 @@
-from django.urls import path
-from . import views
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import (
+    SharePostViewSet,
+    SharePostCommentViewSet,
+    HelpPostViewSet,
+    HelpPostCommentViewSet,
+)
+
+router = DefaultRouter()
+router.register(r'share-posts', SharePostViewSet, basename='share-posts')
+router.register(r'help-posts', HelpPostViewSet, basename='help-posts')
 
 urlpatterns = [
-    path('share-posts/', views.GetSharePosts.as_view()),
-    path('share-posts/<int:share_post_id>/comments/', views.GetSharePostComments.as_view()),
-    path('share-posts/create/', views.CreateSharePost.as_view()),
-    path('share-posts/<int:pk>/update/', views.ChangeSharePost.as_view()),
-    path('share-posts/<int:pk>/delete/', views.DeleteSharePost.as_view()),
-    path('share-posts/create/<int:share_post_id>/comment/', views.CreateSharePostComment.as_view()),
+    path('', include(router.urls)),
 
-    path('help-posts/', views.GetHelpPosts.as_view()),
-    path('help-posts/<int:help_post_id>/comments/', views.GetHelpPostComments.as_view()),
-    path('help-posts/create/', views.CreateHelpPost.as_view()),
-    path('help-posts/create/<int:help_post_id>/comment/', views.CreateHelpPostComment.as_view()),
-    path('help-posts/<int:pk>/update/', views.ChangeHelpPost.as_view()),
-    path('help-posts/<int:pk>/delete/', views.DeleteHelpPost.as_view()),
+    # SharePost comments
+    path(
+        'share-posts/<int:share_post_id>/comments/',
+        SharePostCommentViewSet.as_view({
+            'get': 'list',
+            'post': 'create',
+
+        }),
+    ),
+path(
+    'share-posts/<int:share_post_id>/comments/<int:pk>/',
+    SharePostCommentViewSet.as_view({
+        'get': 'retrieve',
+        'put': 'update',
+        'patch': 'partial_update',
+        'delete': 'destroy',
+    }),
+),
+    # HelpPost comments
+    path(
+        'help-posts/<int:help_post_id>/comments/',
+        HelpPostCommentViewSet.as_view({
+            'get': 'list',
+            'post': 'create',
+        }),
+    ),
 ]

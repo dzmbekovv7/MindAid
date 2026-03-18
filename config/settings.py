@@ -94,7 +94,7 @@ SIMPLE_JWT = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'mindaid',      # your database name
+        'NAME': 'mindaiddb',      # your database name
         'USER': 'postgres',       # postgres user
         'PASSWORD': 'Aziret7bklass',  # your postgres password
         'HOST': 'localhost',
@@ -139,7 +139,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'aziretdzumabekov19@gmail.com'
 EMAIL_HOST_PASSWORD = 'efvr gqde oowj jduk'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
+AUTH_USER_MODEL = 'users.MindAidUser'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 

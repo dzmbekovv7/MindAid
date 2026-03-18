@@ -3,98 +3,109 @@ from rest_framework import generics
 from .models import SharePost, SharePostComment, HelpPost, HelpPostComment
 from .serializers import (GetSharePostsSerializer, GetSharePostCommentsSerializer,
                           CreateSharePostSerializer, UpdateSharePostSerializer,
-                          CreateSharePostCommentSerializer, GetHelpPostsSerializer,
+                          CreateUpdateSharePostCommentSerializer, GetHelpPostsSerializer,
                           GetHelpPostCommentsSerializer, CreateHelpPostSerializer,
                           CreateHelpPostCommentSerializer, UpdateHelpPostSerializer)
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.filters import SearchFilter
+from rest_framework import viewsets
+from core.permissions import IsAdminOrModerator, IsAdmin, IsOwnerOrAdminOrReadOnly
 
-class GetSharePosts(generics.ListAPIView):
+class SharePostViewSet(viewsets.ModelViewSet):
     queryset = SharePost.objects.all()
-    serializer_class = GetSharePostsSerializer
-    filter_backends = [SearchFilter, DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['filter']
-    search_fields = ['filter', 'heading']
-    permission_classes = [AllowAny]
+    search_fields = ['heading']
 
-class GetSharePostComments(generics.ListAPIView):
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        if self.action == 'create':
+            return [IsAuthenticated()]
+        return [IsAuthenticated(), IsOwnerOrAdminOrReadOnly()]
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return CreateSharePostSerializer
+        elif self.action in ['update', 'partial_update']:
+            return UpdateSharePostSerializer
+        return GetSharePostsSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class SharePostCommentViewSet(viewsets.ModelViewSet):
     serializer_class = GetSharePostCommentsSerializer
-    permission_classes = [AllowAny]
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        if self.action == 'create':
+            return [IsAuthenticated()]
+        return [IsAuthenticated(), IsOwnerOrAdminOrReadOnly()]
+
 
     def get_queryset(self):
-        share_post_id = self.kwargs['share_post_id']
+        share_post_id = self.kwargs.get('share_post_id')
         return SharePostComment.objects.filter(share_post_id=share_post_id)
 
-class CreateSharePost(generics.CreateAPIView):
-    serializer_class = CreateSharePostSerializer
-    permission_classes = [IsAuthenticated]
-
-class ChangeSharePost(generics.UpdateAPIView):
-    serializer_class = UpdateSharePostSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return SharePost.objects.filter(user=self.request.user)
-
-class DeleteSharePost(generics.DestroyAPIView):
-    serializer_class = UpdateSharePostSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return SharePost.objects.filter(user=self.request.user)
-
-class CreateSharePostComment(generics.CreateAPIView):
-    serializer_class = CreateSharePostCommentSerializer
-    permission_classes = [IsAuthenticated]
+    def get_serializer_class(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return CreateUpdateSharePostCommentSerializer
+        return GetSharePostCommentsSerializer
 
     def perform_create(self, serializer):
-        share_post_id = self.kwargs['share_post_id']
-        # share_post = SharePost.objects.get(id=share_post_id)
+        share_post_id = self.kwargs.get('share_post_id')
         share_post = get_object_or_404(SharePost, id=share_post_id)
-        serializer.save(user=self.request.user,share_post=share_post)
+        serializer.save(user=self.request.user, share_post=share_post)
 
-class GetHelpPosts(generics.ListAPIView):
+
+class HelpPostViewSet(viewsets.ModelViewSet):
     queryset = HelpPost.objects.all()
-    serializer_class = GetHelpPostsSerializer
     filter_backends = [SearchFilter, DjangoFilterBackend]
     filterset_fields = ['filter']
-    search_fields = ['filter', 'heading']
-    permission_classes = [AllowAny]
+    search_fields = ['heading']
 
-class GetHelpPostComments(generics.ListAPIView):
-    permission_classes = [AllowAny]
-    serializer_class = GetHelpPostCommentsSerializer
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        if self.action == 'create':
+            return [IsAuthenticated()]
+        return [IsAuthenticated(), IsOwnerOrAdminOrReadOnly()]
 
-    def get_queryset(self):
-        help_post_id = self.kwargs['help_post_id']
-        return HelpPostComment.objects.filter(help_post_id=help_post_id)
-
-class CreateHelpPost(generics.CreateAPIView):
-    serializer_class = CreateHelpPostSerializer
-    permission_classes = [IsAuthenticated]
-
-class ChangeHelpPost(generics.UpdateAPIView):
-    serializer_class = UpdateHelpPostSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return HelpPost.objects.filter(user=self.request.user)
-
-class DeleteHelpPost(generics.DestroyAPIView):
-    serializer_class = UpdateHelpPostSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return HelpPost.objects.filter(user=self.request.user)
-
-class CreateHelpPostComment(generics.CreateAPIView):
-    serializer_class = CreateHelpPostCommentSerializer
-    permission_classes = [IsAuthenticated]
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return CreateHelpPostSerializer
+        elif self.action in ['update', 'partial_update']:
+            return UpdateHelpPostSerializer
+        return GetHelpPostsSerializer
 
     def perform_create(self, serializer):
-        help_post_id = self.kwargs['help_post_id']
-        # help_post = HelpPost.objects.get(id=help_post_id)
-        help_post= get_object_or_404(HelpPost, id=help_post_id)
-        serializer.save(user=self.request.user,help_post=help_post)
+        serializer.save(user=self.request.user)
+
+
+class HelpPostCommentViewSet(viewsets.ModelViewSet):
+    serializer_class = GetHelpPostCommentsSerializer
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        if self.action == 'create':
+            return [IsAuthenticated()]
+        return [IsAuthenticated(), IsOwnerOrAdminOrReadOnly()]
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return CreateHelpPostCommentSerializer
+        return GetHelpPostCommentsSerializer
+
+    def get_queryset(self):
+        help_post_id = self.kwargs.get('help_post_id')
+        return HelpPostComment.objects.filter(help_post_id=help_post_id)
+
+    def perform_create(self, serializer):
+        help_post_id = self.kwargs.get('help_post_id')
+        help_post = get_object_or_404(HelpPost, id=help_post_id)
+        serializer.save(user=self.request.user, help_post=help_post)
